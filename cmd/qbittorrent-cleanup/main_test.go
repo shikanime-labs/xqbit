@@ -87,7 +87,7 @@ func TestGetMissingFilesTorrents(t *testing.T) {
 }
 
 func TestGetMissingFilesTorrents_none(t *testing.T) {
-	ts := newTestServer(t, func(w http.ResponseWriter, r *http.Request) {
+	ts := newTestServer(t, func(w http.ResponseWriter, _ *http.Request) {
 		_ = json.NewEncoder(w).Encode([]Torrent{
 			{Hash: "bbb", State: "downloading", Name: "Torrent B"},
 			{Hash: "ddd", State: "error", Name: "Torrent D"},
@@ -130,7 +130,10 @@ func TestGetTorrents_emptyFilter(t *testing.T) {
 
 // newTestServer starts a test HTTP server that verifies login then delegates
 // to the given handler for subsequent requests.
-func newTestServer(t *testing.T, infoHandler func(w http.ResponseWriter, r *http.Request)) *httptest.Server {
+func newTestServer(
+	t *testing.T,
+	infoHandler func(w http.ResponseWriter, r *http.Request),
+) *httptest.Server {
 	t.Helper()
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {

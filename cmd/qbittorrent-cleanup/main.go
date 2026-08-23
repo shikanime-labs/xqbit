@@ -48,7 +48,15 @@ func init() {
 	f.String("user", "", "qBittorrent username")
 	f.String("password", "", "qBittorrent password")
 	f.Duration("timeout", 30*time.Second, "API request timeout")
-	f.StringSlice("job", nil, fmt.Sprintf("Jobs to run (repeatable: --job=%s --job=%s); defaults to both", jobDeleteMissingFiles, jobResumeErrored))
+	f.StringSlice(
+		"job",
+		nil,
+		fmt.Sprintf(
+			"Jobs to run (repeatable: --job=%s --job=%s); defaults to both",
+			jobDeleteMissingFiles,
+			jobResumeErrored,
+		),
+	)
 
 	cobra.OnInitialize(func() {
 		viper.SetEnvPrefix("QBT")
