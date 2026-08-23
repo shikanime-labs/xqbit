@@ -14,7 +14,7 @@ jobs:
       OPERATOR_PRIVATE_KEY: ${{ secrets.OPERATOR_PRIVATE_KEY }}
     uses: ./.github/workflows/nix.yaml
     with:
-      cachix-name: shikanime
+      cachix-name: shikanime-studio
   skaffold:
     if:
       ${{ github.event_name == 'workflow_call' || github.event_name ==
