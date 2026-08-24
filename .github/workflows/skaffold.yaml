@@ -3,6 +3,11 @@ permissions:
   contents: read
 "on":
   workflow_call:
+    inputs:
+      push:
+        type: boolean
+        default: true
+        description: Whether to push images during build
     secrets:
       OPERATOR_PRIVATE_KEY:
         required: true
@@ -19,10 +24,10 @@ jobs:
         continue-on-error: true
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.OPERATOR_APP_ID }}
+          client-id: ${{ vars.OPERATOR_APP_CLIENT_ID }}
           permission-contents: read
           private-key: ${{ secrets.OPERATOR_PRIVATE_KEY }}
-      - uses: shikanime-studio/actions/checkout@v9
+      - uses: shikanime-labs/actions/checkout@v9
         with:
           github-token:
             ${{ steps.createGithubAppToken.outputs.token || secrets.GITHUB_TOKEN
@@ -32,14 +37,28 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
           registry: ghcr.io
           username: ${{ github.actor }}
-      - uses: shikanime-studio/actions/nix/setup@v9
+      - uses: shikanime-labs/actions/nix/setup@v9
         with:
           github-token:
             ${{ steps.createGithubAppToken.outputs.token || secrets.GITHUB_TOKEN
             }}
       - id: direnv
-        uses: shikanime-studio/actions/direnv@v9
-      - uses: shikanime-studio/actions/skaffold/integration@v9
+        uses: shikanime-labs/actions/direnv@v9
+      - id: skaffold
+        uses: shikanime-labs/actions/skaffold/integration@v9
+        with:
+          push: ${{ inputs.push }}
+      - name: Save manifest
+        run:
+          "mkdir -p artifacts\ncat > artifacts/skaffold-manifest.yaml
+          <<'MANIFEST_EOF'\n$SKAFFOLD_MANIFEST\nMANIFEST_EOF\n"
+        shell: bash
+        env:
+          SKAFFOLD_MANIFEST: ${{ steps.skaffold.outputs.manifest }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: skaffold-manifest
+          path: artifacts/skaffold-manifest.yaml
   build-render-profile:
     name: Build & Render (Profile)
     if: ${{ needs['setup-profiles-jobs'].outputs.continue == 'true' }}
@@ -58,10 +77,10 @@ jobs:
         continue-on-error: true
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.OPERATOR_APP_ID }}
+          client-id: ${{ vars.OPERATOR_APP_CLIENT_ID }}
           permission-contents: read
           private-key: ${{ secrets.OPERATOR_PRIVATE_KEY }}
-      - uses: shikanime-studio/actions/checkout@v9
+      - uses: shikanime-labs/actions/checkout@v9
         with:
           github-token:
             ${{ steps.createGithubAppToken.outputs.token || secrets.GITHUB_TOKEN
@@ -71,16 +90,17 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
           registry: ghcr.io
           username: ${{ github.actor }}
-      - uses: shikanime-studio/actions/nix/setup@v9
+      - uses: shikanime-labs/actions/nix/setup@v9
         with:
           github-token:
             ${{ steps.createGithubAppToken.outputs.token || secrets.GITHUB_TOKEN
             }}
       - id: direnv
-        uses: shikanime-studio/actions/direnv@v9
-      - uses: shikanime-studio/actions/skaffold/integration@v9
+        uses: shikanime-labs/actions/direnv@v9
+      - uses: shikanime-labs/actions/skaffold/integration@v9
         with:
           profile: ${{ matrix.name }}
+          push: ${{ inputs.push }}
   setup-profiles-jobs:
     name: Setup Profiles Jobs
     runs-on: ubuntu-latest
@@ -92,18 +112,18 @@ jobs:
         continue-on-error: true
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.OPERATOR_APP_ID }}
+          client-id: ${{ vars.OPERATOR_APP_CLIENT_ID }}
           permission-contents: read
           private-key: ${{ secrets.OPERATOR_PRIVATE_KEY }}
-      - uses: shikanime-studio/actions/checkout@v9
+      - uses: shikanime-labs/actions/checkout@v9
         with:
           github-token:
             ${{ steps.createGithubAppToken.outputs.token || secrets.GITHUB_TOKEN
             }}
-      - uses: shikanime-studio/actions/nix/setup@v9
+      - uses: shikanime-labs/actions/nix/setup@v9
         with:
           github-token:
             ${{ steps.createGithubAppToken.outputs.token || secrets.GITHUB_TOKEN
             }}
       - id: setup-profiles-jobs
-        uses: shikanime-studio/actions/skaffold/setup-profiles-jobs@v9
+        uses: shikanime-labs/actions/skaffold/setup-profiles-jobs@v9

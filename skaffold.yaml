@@ -5,7 +5,7 @@ metadata:
 build:
   artifacts:
     - context: cmd/qbittorrent-cleanup
-      image: ghcr.io/x-shikanime/xqbit/qbittorrent-cleanup
+      image: ghcr.io/shikanime-labs/xqbit/qbittorrent-cleanup
       ko: {}
       platforms:
         - linux/amd64
