@@ -95,8 +95,8 @@ func (c *QBitClient) Login(ctx context.Context, user, pass string) error {
 	}
 	defer func() { _ = resp.Body.Close() }()
 
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("login failed: %d", resp.StatusCode)
+	if code := resp.StatusCode; code != http.StatusOK && code != http.StatusNoContent {
+		return fmt.Errorf("login failed: %d", code)
 	}
 	return nil
 }
