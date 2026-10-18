@@ -39,7 +39,7 @@ var allJobs = []string{jobDeleteMissingFiles, jobResumeErrored}
 var rootCmd = &cobra.Command{
 	Use:   "qbittorrent-cleanup",
 	Short: "Removes missingFiles torrents and resumes recoverable errored torrents",
-	Run:   runCleanup,
+	RunE:  runCleanup,
 }
 
 func init() {
@@ -194,7 +194,7 @@ func main() {
 	}
 }
 
-func runCleanup(_ *cobra.Command, _ []string) {
+func runCleanup(_ *cobra.Command, _ []string) error {
 	apiURL := viper.GetString("url")
 	user := viper.GetString("user")
 	pass := viper.GetString("password")
@@ -220,7 +220,7 @@ func runCleanup(_ *cobra.Command, _ []string) {
 
 	if err := client.Login(ctx, user, pass); err != nil {
 		fmt.Printf("Auth error: %v\n", err)
-		return
+		return err
 	}
 
 	for _, job := range jobs {
@@ -233,6 +233,7 @@ func runCleanup(_ *cobra.Command, _ []string) {
 			fmt.Printf("Unknown job: %s\n", job)
 		}
 	}
+	return nil
 }
 
 func deleteMissingFiles(ctx context.Context, client *QBitClient) {
